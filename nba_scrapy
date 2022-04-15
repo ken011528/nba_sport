@@ -1,0 +1,181 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Feb  8 21:33:04 2022
+
+@author: User
+"""
+
+import pandas as pd
+import os
+
+import re
+import requests 
+from bs4 import BeautifulSoup as bs
+import pandas as pd
+from datetime import datetime
+
+def get_detail(match_id):
+    href_ = 'https://www.basketball-reference.com/boxscores/{}.html'.format(match_id)
+    match_stat = bs(requests.get(href_).text).find_all(class_ = 'table_container')
+    match = []
+    for m_text in match_stat:
+        if 'game-basic' in m_text.get('id') or 'game-advanced' in m_text.get('id'):
+            match.append(m_text)
+    temp = pd.DataFrame()
+    dict_ = {}
+    match_dict = {}
+    result = pd.DataFrame()
+    for idx,total in enumerate(match):
+        if idx == 1:
+            opp = not True
+            advanced = True
+        elif idx == 2:
+            opp = True
+            advanced = not True
+        elif idx == 3:
+            opp = True
+            advanced = True
+        else:
+            opp = not True
+            advanced = not True
+
+        for td in total.find('tfoot').find_all('td'):
+            col = td.get('data-stat')
+            if opp and not advanced:
+                  col = col + '_home'
+            elif opp and advanced:
+                  col  = col +'_home_advanced'
+            else:
+                if not advanced:
+                    col = col + '_away'
+                else:
+                    col  = col +'_away_advanced'
+            value = td.text
+            match_dict[col] = value
+
+        for m in match_dict:
+            dict_[m] = match_dict[m]
+    result = pd.concat([result, pd.DataFrame(dict_, index = [0])])
+        
+    return result
+
+def get_data(yr = 2022, all = not True):
+    from datetime import datetime
+    try:
+      current_season_data = pd.read_csv('./nba_current/nba_{}_{}.csv'.format(yr-1, yr))
+      current_season_data_id = current_season_data['id'].unique()
+
+      empty_id = current_season_data.sort_values(by = 'id')['id'].unique()
+      
+      empty_d = empty_id[0][:6]
+      first = not True
+    except :
+      first = True
+      empty_id = []
+    if all:
+      first = True
+    url = 'https://www.basketball-reference.com/leagues/NBA_{}_games.html'.format(yr)
+    soup = bs(requests.get(url).text).find_all(class_ = 'filter')[0].find_all('a')
+    result = pd.DataFrame()
+    null = not True
+    for href in soup:
+        link = 'https://www.basketball-reference.com' + href.get('href')
+        year = re.findall(r'\d+', link)[0]
+        # year = link.split('.html')[0][-4:]
+
+        month = link.split('-' + year)[0][::-1].split('-')[0][::-1]
+        if not first:
+          month_ = datetime.strptime(month.split('.html')[0],'%B')
+          d = str(year) + str(month_.year) + str(month_.month)
+          if d <empty_d:
+            continue
+        schedule = bs(requests.get(link).text).find(id = 'schedule')
+        dict_ = {}
+        for s_ in schedule.find('tbody').find_all('tr'):
+          td = s_.find_all('td')
+          id_ = s_.find('th').get('csk')
+          if id_ in current_season_data_id and not first:
+            continue
+          for data in td:
+            dict_['id'] = id_
+            data_stat = data.get('data-stat')
+            if not all:
+              if data_stat == 'visitor_pts' and data.text == '':
+                null = True
+                break    
+            try :
+              dict_[data_stat] = float(data.text.strip())
+            except:
+              dict_[data_stat] = data.text.strip()                      
+
+
+            if data.get('data-stat') == 'box_score_text':
+              try:
+                href_ = 'https://www.basketball-reference.com'+ data.find('a').get('href')
+                match_stat = bs(requests.get(href_).text).find_all(class_ = 'table_container')
+                match = []
+                for m_text in match_stat:
+                  if 'game-basic' in m_text.get('id') or 'game-advanced' in m_text.get('id'):
+                    match.append(m_text)
+                temp = pd.DataFrame()
+
+                match_dict = {}
+                for idx,total in enumerate(match):
+
+                  if idx == 1:
+                    opp = not True
+                    advanced = True
+                  elif idx == 2:
+                    opp = True
+                    advanced = not True
+                  elif idx == 3:
+                    opp = True
+                    advanced = True
+                  else:
+                    opp = not True
+                    advanced = not True
+
+                  for td in total.find('tfoot').find_all('td'):
+
+                    col = td.get('data-stat')
+                    if opp and not advanced:
+                      col = col + '_home'
+                    elif opp and advanced:
+                      col  = col +'_home_advanced'
+                    else:
+                      if not advanced:
+                        col = col + '_away'
+                      else:
+                        col  = col +'_away_advanced'
+                    value = td.text
+                    match_dict[col] = value
+
+
+                for m in match_dict:
+                  try :
+                    dict_[m] = float(match_dict[m].strip())
+                  except:
+                    dict_[m] = match_dict[m].strip()
+              except :
+                pass
+          if null:
+            break                
+          result = pd.concat([result, pd.DataFrame(dict_, index = [0])])
+        if null:
+          break
+    if not first:
+      # current_season_data = current_season_data[~pd.isnull(current_season_data['home_pts'])]
+      result = pd.concat([current_season_data,result])
+    
+    result['year'] = year
+    
+    return result
+
+def get_playoff_date(year):
+  url = 'https://www.basketball-reference.com/playoffs/NBA_{}_games.html'.format(year)
+  soup = bs(requests.get(url).text)
+  
+  id_ = soup.find_all(id = 'schedule')[0].find('tbody').find('th')['csk']
+  result = pd.DataFrame({'id':id_},index = [0])
+  result['date'] = id_[:-4]
+  return result
