@@ -275,70 +275,27 @@ if elo_:
       'trb_away_opp', 'true_home_probability','true_away_probability','home_elo','away_elo']
 else:
     col = [
-    'true_away_probability',
-    # 'true_home_probability',
-    
-    ]
-    
-    
-    # col = [
-    #   'current_home_win',
-    #   'current_home_lose',
-    #   'def_rtg_home_opp_advanced',
-    #   'def_rtg_home_advanced',
-    #   'pts_home_opp',
-    #   'drb_away',
-    #   'pts_away',
-    #   'pts_home',
-    #   'pts_away_opp',
-    #     'efg_pct_away_advanced',
-    #     'ts_pct_home_advanced',
-    #     'ts_pct_home_opp_advanced',
-    #     'ts_pct_away_advanced',
-    #   'fg_home_opp',
-    #   'blk_away_opp',
-    #   'efg_pct_home_advanced',
-    #   'efg_pct_home_opp_advanced',
-    #   'ast_away_opp',
-    #   'trb_home_opp',
-    #     'orb_pct_away_opp_advanced',
-    #   'trb_away_opp', 'true_home_probability','true_away_probability', 'id']
-    
-    
-    # col = [
-    #   'current_home_win',
-    #   'current_home_lose',
-    #   'def_rtg_home_opp_advanced',
-    #   'def_rtg_home_advanced',
-    #   'pts_home_opp',
-    #   'drb_away',
-    #   'pts_away',
-    #   'pts_home',
-    #   'pts_away_opp',
-    #     'efg_pct_away_advanced',
-    #     'ts_pct_home_advanced',
-    #     'ts_pct_home_opp_advanced',
-    #     'ts_pct_away_advanced',
-    #   'fg_home_opp',
-    #   'blk_away_opp',
-    #   'efg_pct_home_advanced',
-    #   'efg_pct_home_opp_advanced',
-    #   'ast_away_opp',
-    #   'trb_home_opp',
-    #     'orb_pct_away_opp_advanced',
-    #   'trb_away_opp', 'true_home_probability','true_away_probability' , 'id']
-    
-    # col = [
-    #  'true_home_probability','true_away_probability','id']
-
-
-# col = list(train_data.loc[:, train_data.columns.str.contains('advanced')].columns)
-# remove_list = ['box_score_text_y','box_score_text_x','attendance_y','attendance_x','away_Team','home_Team']
-
-# [col.remove(x) for x in train_data.loc[:, train_data.columns.str.contains('game_start_time')].columns]
-# [col.remove(x) for x in remove_list]
-# col += list(train_data.loc[:, train_data.columns.str.contains('true')].columns)
-# col.append('id')
+    'current_home_win',
+    'current_home_lose',
+    'def_rtg_home_opp_advanced',
+    'def_rtg_home_advanced',
+    'pts_home_opp',
+    'drb_away',
+    'pts_away',
+    'pts_home',
+    'pts_away_opp',
+      'efg_pct_away_advanced',
+      'ts_pct_home_advanced',
+      'ts_pct_home_opp_advanced',
+      'ts_pct_away_advanced',
+    'fg_home_opp',
+    'blk_away_opp',
+    'efg_pct_home_advanced',
+    'efg_pct_home_opp_advanced',
+    'ast_away_opp',
+    'trb_home_opp',
+      'orb_pct_away_opp_advanced',
+    'trb_away_opp', 'true_home_probability','true_away_probability']
 
 if elo_:
     from datetime import datetime, timedelta
